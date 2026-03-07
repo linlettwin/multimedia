@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>UIT Campus Tour</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --uit-teal:#007684;
+    --bg-light:#f6f9fa;
+    --text-dark:#1c1c1c;
+}
+
+/* Base */
+
+body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    background:var(--bg-light);
+    color:var(--text-dark);
+}
+
+/* Layout wrapper */
+
+.app-wrapper{
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+}
+
+/* Top Bar */
+
+.top-bar{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding:20px 40px;
+    background:white;
+    border-bottom:2px solid var(--uit-teal);
+}
+
+.page-title{
+    font-size:1.6rem;
+    font-weight:600;
+}
+
+.back-btn{
+    text-decoration:none;
+}
+
+.back-btn div{
+    border:2px solid var(--uit-teal);
+    padding:7px 16px;
+    color:var(--uit-teal);
+    border-radius:5px;
+    transition:.3s;
+}
+
+.back-btn div:hover{
+    background:var(--uit-teal);
+    color:white;
+}
+
+/* Main Content Section */
+
+.content-section{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:70px;
+    padding:60px;
+}
+
+/* Video */
+
+.video-area{
+    flex:1;
+    max-width:520px;
+}
+
+.video-card{
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 15px 45px rgba(0,0,0,0.15);
+}
+
+.video-card video{
+    width:100%;
+    display:block;
+}
+
+/* Info Panel */
+
+.info-area{
+    flex:1;
+    max-width:520px;
+}
+
+.info-area h2{
+    font-family:'Montserrat';
+    font-size:2rem;
+    margin-bottom:20px;
+    color:var(--uit-teal);
+}
+
+.info-area p{
+    font-size:0.95rem;
+    line-height:1.7;
+    margin-bottom:18px;
+}
+
+/* Button */
+
+.visit-btn{
+    display:inline-block;
+    margin-top:10px;
+    padding:12px 26px;
+    background:var(--uit-teal);
+    color:white;
+    text-decoration:none;
+    border-radius:6px;
+    transition:.3s;
+}
+
+.visit-btn:hover{
+    background:#005a66;
+}
+
+/* Responsive */
+
+@media (max-width:900px){
+
+.content-section{
+    flex-direction:column;
+    text-align:center;
+    padding:40px 25px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+  <div class="app-wrapper">
+
+    <div class="top-bar">
+
+      <a href="category.html" class="back-btn">
+      <div>← Back</div>
+    </a>
+
+    <h1 class="page-title">Campus Environment</h1>
+
+  </div>
+
+  <!-- Main Section -->
+
+  <div class="content-section">
+
+  <!-- Video -->
+
+    <div class="video-area">
+
+    <div class="video-card">
+
+      <video autoplay muted loop playsinline>
+      <source src="images/campus_video.mp4" type="video/mp4">
+      </video>
+
+    </div>
+
+  </div>
+
+  <!-- Description -->
+
+  <div class="info-area">
+
+    <h2>University of Information Technology</h2>
+
+    <p>
+    The University of Information Technology (UIT) is one of Myanmar’s leading institutions 
+    focused on computer science, software engineering, and information technology education.
+    </p>
+
+    <p>
+    The campus provides modern classrooms, advanced laboratories, and collaborative spaces 
+    that support innovation, research, and hands-on learning for students.
+    </p>
+
+    <p>
+    UIT prepares students to become skilled IT professionals capable of contributing to 
+    technological development both locally and internationally.
+    </p>
+
+    <a href="https://www.uit.edu.mm/" target="_blank" class="visit-btn">
+    Visit Official Website →
+    </a>
+
+  </div>
+
+  </div>
+
+  </div>
+
+</body>
+</html>

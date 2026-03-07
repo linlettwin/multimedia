@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIT | Campus Tour</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --uit-teal: #007684;
+            --white-alpha: rgba(255, 255, 255, 0.95);
+            --dark-overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Open Sans', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Full Screen Background Container */
+        .viewport-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: grab;
+        }
+
+        .tour-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.6s ease-in-out, transform 0.1s ease-out;
+            transform-origin: center;
+        }
+
+        .fade-out { opacity: 0; }
+
+        /* Top Navigation Bar */
+        header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 40px;
+            background: var(--white-alpha);
+            border-bottom: 3px solid var(--uit-teal);
+            color: var(--uit-teal);
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .logo-area { text-align: center; font-weight: bold; line-height: 1.2; }
+        .logo-area span { display: block; font-size: 0.8rem; letter-spacing: 2px; }
+        .header-link { color: var(--uit-teal); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+
+        
+        /* Floating Info Card (Courtyard Style) */
+        .info-card {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: var(--white-alpha);
+            width: 320px;
+            z-index: 5;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            transition: left 0.4s ease;
+        }
+
+        .info-card.hidden { left: -320px; }
+
+        .card-header { padding: 25px; border-bottom: 1px solid #eee; }
+        .card-header h1 { margin: 0; font-family: 'Montserrat'; font-size: 1.2rem; }
+
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover { background: #fff; color: var(--uit-teal); }
+
+        .icon-circle {
+            width: 32px; height: 32px;
+            border: 1.5px solid var(--uit-teal);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: -25px; top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            width: 25px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* Bottom Gallery Controls (Library Style) */
+        .gallery-controls {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .gallery-bar {
+            background: var(--uit-teal);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 40px;
+        }
+
+        .gallery-text-area {
+            background: white;
+            padding: 20px 40px;
+            text-align: center;
+        }
+
+        .gallery-text-area h2 { 
+            color: var(--uit-teal); 
+            margin: 0 0 10px 0; 
+            text-transform: uppercase;
+            font-size: 1.1rem;
+        }
+
+        .gallery-text-area p { margin: 0; font-size: 0.9rem; color: #555; max-width: 800px; margin: 0 auto; }
+
+        .arrow { cursor: pointer; font-size: 1.5rem; padding: 0 20px; }
+
+        .tour-image{
+        transition: opacity 0.6s ease, transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+     <header style="padding:30px">
+        <a href = "category.html" style="text-decoration:none;color:inherit;">
+            <div style="border:1px solid #333;padding:5px 15px;">← Back</div>
+        </a>
+
+        <div class="logo-area">
+        UNIVERSITY OF INFORMATION TECHNOLOGY<br>
+        <span>UIT</span>
+        </div>
+
+            <div class="nav-links">
+            <a href="https://www.uit.edu.mm/" style="text-decoration:none;color:inherit;">Apply Now →</a>
+            </div>
+        </header>
+
+    <div class="viewport-container" id="container">
+        <img src="images/klab.jpg" class="tour-image" id="tourImg">
+    </div>
+
+
+    <div class="gallery-controls">
+        <div class="gallery-bar">
+            <span class="arrow">‹</span>
+            <span id="galleryCounter">1 / 3</span>
+            <span class="arrow">›</span>
+        </div>
+        <div class="gallery-text-area">
+            <h2 id="galleryTitle">K Lab</h2>
+            <p id="galleryDesc">
+                Building the K-Lab (Korean Fab-Lab) in Myanmar. The K-Lab is a space where everyone can make a prototype with his own idea in real by using digital fabrication machines such as Laser Cutter, 3D Printer and CNC router. The K-Lab is just like a public library. Fab-Lab started from MIT center for Bits and Atoms. Now there are more than 600 Fab-Labs in 79 countries.
+            </p>
+        </div>
+    </div>
+
+<script>
+let scale = 1;
+const img = document.getElementById('tourImg');
+
+const images = [
+    {
+        src: "images/klab.jpg",
+       
+    },
+    {
+        src: "images/klab2.jpg",
+       
+    },
+    {
+        src: "images/klab3.jpg",
+        
+    }
+];
+
+let currentIndex = 0;
+
+const title = document.getElementById("galleryTitle");
+const desc = document.getElementById("galleryDesc");
+const counter = document.getElementById("galleryCounter");
+
+function changeImage(index){
+
+    img.classList.add("fade-out");
+
+    setTimeout(() => {
+
+        img.src = images[index].src;
+        counter.textContent = (index + 1) + " / " + images.length;
+
+        img.classList.remove("fade-out");
+
+    },100);
+}
+
+function nextImage(){
+    currentIndex = (currentIndex + 1) % images.length;
+    changeImage(currentIndex);
+}
+
+function prevImage(){
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    changeImage(currentIndex);
+}
+
+// Arrow buttons
+document.querySelectorAll(".arrow")[1].onclick = nextImage;
+document.querySelectorAll(".arrow")[0].onclick = prevImage;
+
+// Auto slide every 2 seconds
+setInterval(nextImage,5000);
+
+
+// Zoom Logic
+window.addEventListener('wheel', (e) => {
+    const delta = e.deltaY < 0 ? 0.05 : -0.05;
+    scale = Math.min(Math.max(1, scale + delta), 2.5);
+    img.style.transform = `scale(${scale})`;
+});
+
+</script>
+</body>
+</html>
