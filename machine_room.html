@@ -269,17 +269,17 @@ header {
          <span>Building 2</span>
     </div>
 
-    <div class="nav-item" onclick="changeLocation('Room 436','images/mroom2.jpg')">
+    <div class="nav-item" onclick="changeLocation('Room 232','images/mroom2.jpg')">
         <div class="icon-circle">M</div>
         <div>Classroom R-232</div>
     </div>
 
-    <div class="nav-item" onclick="changeLocation('Room 434','images/mroom3.jpg')">
+    <div class="nav-item" onclick="changeLocation('Room 233','images/mroom3.jpg')">
         <div class="icon-circle">M</div>
         <div>Classroom R-233</div>
     </div>
 
-    <div class="nav-item" onclick="changeLocation('Room 434','images/mroom1.jpg')">
+    <div class="nav-item" onclick="changeLocation('Room 234','images/mroom1.jpg')">
         <div class="icon-circle">M</div>
         <div>Classroom R-234</div>
     </div>
@@ -332,6 +332,8 @@ function changeLocation(name,src){
         scale = 1
         img.style.transform = "scale(1)"
         img.style.opacity = 1
+
+        renderHotspots(src)
 
     },400)
 
