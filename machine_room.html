@@ -15,12 +15,20 @@
     --white-alpha: rgba(255, 255, 255, 0.9);
 }
 
+body.dark-mode {
+    --uit-teal: #00d4aa;
+    --white: #0f172a;
+    --text-dark: #f1f5f9;
+    --white-alpha: rgba(15, 23, 42, 0.9);
+}
+
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     font-family: 'Roboto', sans-serif;
     overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Full Screen Media Background */
@@ -31,6 +39,7 @@ body, html {
     width: 100%;
     height: 100%;
     z-index: -1;
+    background-color: var(--white);
 }
 
 .tour-background img {
@@ -48,9 +57,10 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 10px 40px;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--white-alpha);
     color: var(--uit-teal);
     border-bottom: 3px solid var(--uit-teal);
+    transition: background-color 0.3s ease;
 }
 
 .logo-area {
@@ -82,7 +92,7 @@ header {
     background: var(--white-alpha);
     width: 320px;
     box-shadow: 2px 0 15px rgba(0,0,0,0.1);
-    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
     z-index: 5;
     border-radius: 3px;
 }
@@ -90,7 +100,7 @@ header {
 .nav-card.hidden { left: -320px; }
 .card-header {
     padding: 20px 25px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .card-header h1 {
@@ -106,7 +116,8 @@ header {
     align-items: center;
     gap: 15px;
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-dark);
 }
 
 .icon-circle {
@@ -117,6 +128,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--uit-teal);
 }
 
 /* Toggle Button */
@@ -125,7 +137,8 @@ header {
     right: -25px;
     top: 50%;
     transform: translateY(-50%);
-    background: white;
+    background: var(--white);
+    color: var(--uit-teal);
     width: 25px;
     height: 50px;
     display: flex;
@@ -154,6 +167,70 @@ header {
     align-items: center;
     justify-content: center;
 }
+ .hotspot-layer {
+     position: fixed;
+     inset: 0;
+     pointer-events: none;
+     z-index: 2;
+ }
+ .hotspot {
+     position: absolute;
+     width: 22px;
+     height: 22px;
+     background: var(--uit-teal);
+     border-radius: 50%;
+     box-shadow: 0 0 0 8px rgba(0,118,132,0.15);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     color: #fff;
+     font-size: 12px;
+     pointer-events: auto;
+     cursor: pointer;
+     transition: transform 0.2s ease;
+ }
+ .hotspot:hover {
+     transform: scale(1.1);
+ }
+ .tooltip {
+     position: absolute;
+     min-width: 180px;
+     max-width: 280px;
+     background: rgba(255,255,255,0.95);
+     color: var(--text-dark);
+     border: 1px solid #e5e7eb;
+     border-radius: 8px;
+     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+     padding: 10px 12px;
+     font-size: 0.9rem;
+     transform: translate(-50%, -120%);
+     z-index: 3;
+ }
+ .audioguide {
+     position: fixed;
+     left: 20px;
+     bottom: 20px;
+     background: rgba(255,255,255,0.9);
+     border: 1px solid #e5e7eb;
+     border-radius: 10px;
+     box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+     padding: 10px;
+     display: flex;
+     gap: 10px;
+     z-index: 4;
+ }
+ .audioguide button {
+     background: var(--uit-teal);
+     color: #fff;
+     border: none;
+     border-radius: 8px;
+     padding: 8px 12px;
+     cursor: pointer;
+     font-weight: 600;
+ }
+ .audioguide button.stop {
+     background: #555;
+ }
 </style>
 </head>
 
@@ -179,11 +256,16 @@ header {
     <div class="tour-background">
         <img id="tourImg" src="images/mroom1.jpg">
     </div>
+    <div id="hotspotLayer" class="hotspot-layer"></div>
+    <div class="audioguide">
+        <button id="narrateBtn">🔊 Narrate</button>
+        <button id="stopBtn" class="stop">⏹ Stop</button>
+    </div>
 
     <div class="nav-card" id="navCard">
 
     <div class="card-header">
-        <h1 id="currentLocation">UIT Classrooms</h1>
+        <h1 id="currentLocation">UIT Computer Labs</h1>
          <span>Building 2</span>
     </div>
 
@@ -208,6 +290,13 @@ header {
     
 
 <script>
+// Apply dark mode immediately if set
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+
+// Mark as visited
+localStorage.setItem('visited_computer_lab', 'true');
 
 /* IMAGE ZOOM */
 let scale = 1
@@ -257,6 +346,68 @@ function toggleCard(){
     card.classList.toggle("hidden")
 
 }
+
+const hotspotLayer = document.getElementById("hotspotLayer")
+const hotspotsData = {
+  "images/mroom1.jpg": [
+    { x: "30%", y: "55%", text: "High-performance student workstations" },
+    { x: "65%", y: "50%", text: "Ergonomic seating for collaborative learning" }
+  ],
+  "images/mroom2.jpg": [
+    { x: "35%", y: "58%", text: "Desktop computers for lab exercises" },
+    { x: "70%", y: "48%", text: "Student workspace for programming projects" }
+  ],
+  "images/mroom3.jpg": [
+    { x: "40%", y: "56%", text: "Teaching assistant station and projector setup" },
+    { x: "72%", y: "52%", text: "Shared resources for group assignments" }
+  ]
+}
+
+function renderHotspots(src){
+  hotspotLayer.innerHTML = ""
+  const list = hotspotsData[src] || []
+  list.forEach(h => {
+    const spot = document.createElement("div")
+    spot.className = "hotspot"
+    spot.style.left = h.x
+    spot.style.top = h.y
+    const tooltip = document.createElement("div")
+    tooltip.className = "tooltip"
+    tooltip.textContent = h.text
+    tooltip.style.display = "none"
+    spot.appendChild(tooltip)
+    spot.addEventListener("mouseenter", ()=>{ tooltip.style.display = "block" })
+    spot.addEventListener("mouseleave", ()=>{ tooltip.style.display = "none" })
+    spot.addEventListener("click", ()=>{
+      tooltip.style.display = tooltip.style.display === "none" ? "block" : "none"
+    })
+    hotspotLayer.appendChild(spot)
+  })
+}
+
+const descriptions = {
+  "images/mroom1.jpg": "This computer classroom provides students with high-performance workstations for practical coding and multimedia projects.",
+  "images/mroom2.jpg": "This lab space is equipped with desktop computers and high-speed internet, ideal for web development and software engineering classes.",
+  "images/mroom3.jpg": "This modern classroom features collaborative seating and dual-monitor setups to support team-based learning and advanced IT training."
+}
+
+function narrate(src){
+  const text = descriptions[src] || "Welcome to UIT machine rooms."
+  window.speechSynthesis.cancel()
+  const utter = new SpeechSynthesisUtterance(text)
+  utter.lang = "en-US"
+  window.speechSynthesis.speak(utter)
+}
+
+document.getElementById("narrateBtn").addEventListener("click", ()=>{
+  narrate(document.getElementById("tourImg").getAttribute("src"))
+})
+
+document.getElementById("stopBtn").addEventListener("click", ()=>{
+  window.speechSynthesis.cancel()
+})
+
+renderHotspots(document.getElementById("tourImg").getAttribute("src"))
 
 </script>
 

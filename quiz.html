@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIT | Campus Challenge Quiz</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007684;
+            --primary-dark: #005a66;
+            --accent: #00d4aa;
+            --surface: #f8fafb;
+            --text-main: #1a2e35;
+            --card-bg: rgba(255, 255, 255, 0.9);
+        }
+        body.dark-mode {
+            --surface: #0f172a;
+            --text-main: #f1f5f9;
+            --card-bg: rgba(30, 41, 59, 0.9);
+            --primary: #00d4aa;
+            --accent: #007684;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--surface);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .option-btn {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            background-color: rgba(0, 118, 132, 0.05);
+        }
+        .option-btn.selected {
+            border-color: var(--primary);
+            background-color: var(--primary);
+            color: white;
+        }
+        .option-btn.correct {
+            border-color: #10b981;
+            background-color: #10b981;
+            color: white;
+        }
+        .option-btn.wrong {
+            border-color: #ef4444;
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        /* Drag and Drop Styles */
+        .drop-zone {
+            min-height: 60px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+        }
+        .drop-zone.over {
+            border-color: var(--primary);
+            background: rgba(0, 118, 132, 0.1);
+        }
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            background-color: var(--card-bg);
+            color: var(--primary);
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        /* Matching Game Styles */
+        .match-pair {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Explanation Modal Styles */
+        #explanation-modal {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: var(--card-bg);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+        #explanation-modal.visible {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.4s ease;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-12 px-4">
+    <div class="quiz-container">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold mb-4" style="font-family: 'Space Grotesk', sans-serif; color: var(--primary);">
+                UIT Campus Challenge
+            </h1>
+            <p class="text-gray-600">How well do you know the University of Information Technology?</p>
+        </div>
+
+        <!-- Quiz Card -->
+        <div id="quiz-card" class="glass rounded-3xl shadow-2xl p-8 mb-8 relative overflow-hidden">
+            <!-- Progress -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-gray-500" id="question-counter">Question 1 of 5</span>
+                    <span class="text-sm font-bold text-[#007684]" id="score-display">Score: 0</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 20%"></div>
+                </div>
+            </div>
+
+            <!-- Question Area -->
+            <div id="question-area">
+                <h2 id="question-text" class="text-2xl font-bold mb-8 leading-tight">
+                    Loading question...
+                </h2>
+                <div id="options-grid" class="grid gap-4">
+                    <!-- Options will be injected here -->
+                </div>
+            </div>
+
+            <!-- Explanation Area -->
+            <div id="explanation-modal" class="rounded-3xl">
+                <div id="feedback-icon" class="text-5xl mb-4">✅</div>
+                <h3 id="feedback-title" class="text-2xl font-bold mb-4">Correct!</h3>
+                <p id="explanation-text" class="text-lg text-gray-600 mb-8 leading-relaxed">
+                    Detailed explanation goes here.
+                </p>
+                <button onclick="closeExplanation()" class="bg-[#007684] text-white px-10 py-4 rounded-full font-bold hover:bg-[#005a66] transition-all transform hover:scale-105">
+                    Continue to Next Question →
+                </button>
+            </div>
+
+            <!-- Result Area (Hidden by default) -->
+            <div id="result-area" class="hidden text-center py-8">
+                <div class="text-6xl mb-6" id="result-emoji">🎓</div>
+                <h2 class="text-3xl font-bold mb-4" id="result-title">Amazing Job!</h2>
+                <p class="text-xl text-gray-600 mb-8" id="result-text">You scored 5 out of 5</p>
+                <div class="flex gap-4 justify-center">
+                    <button onclick="location.reload()" class="bg-[#007684] text-white px-8 py-3 rounded-full font-bold hover:bg-[#005a66] transition-colors">
+                        Try Again
+                    </button>
+                    <a href="index.html" class="border-2 border-[#007684] text-[#007684] px-8 py-3 rounded-full font-bold hover:bg-[#007684] hover:text-white transition-all">
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Link -->
+        <div class="text-center">
+            <a href="https://www.uit.edu.mm/" target="_blank" class="text-sm text-gray-500 hover:text-[#007684] transition-colors flex items-center justify-center gap-1">
+                Reference: UIT Official Website
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Apply dark mode immediately if set
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Mark as visited
+        localStorage.setItem('visited_quiz', 'true');
+
+        // Sound effects
+        const sounds = {
+            click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+            correct: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+            wrong: new Audio('https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3'),
+            finish: new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3')
+        };
+
+        function playSound(type) {
+            const s = sounds[type];
+            if (s) {
+                s.currentTime = 0;
+                s.play().catch(e => console.log('Sound playback failed', e));
+            }
+        }
+
+        const questions = [
+            {
+                type: 'choice',
+                question: "What is the official motto of UIT?",
+                options: [
+                    "Innovation for All",
+                    "Towards a Brighter Future through Innovation in ICT",
+                    "Leaders in Technology",
+                    "Excellence in Computing"
+                ],
+                correct: 1,
+                explanation: "UIT's official motto is 'Towards a Brighter Future through Innovation in ICT', emphasizing the university's focus on leading technological progress in Myanmar."
+            },
+            {
+                type: 'choice',
+                question: "Which degrees does UIT offer for its students?",
+                options: [
+                    "Only Bachelor's degrees",
+                    "Undergraduate and Master's only",
+                    "Bachelor's, Diploma, Master's, and Doctoral",
+                    "Diploma courses only"
+                ],
+                correct: 2,
+                explanation: "UIT provides a full academic pathway, offering Bachelor's, Diploma, Master's, and even Doctoral level courses to develop IT professionals at all stages."
+            },
+            {
+                type: 'dragdrop',
+                question: "Match UIT concepts to their descriptions by dragging them into the correct zones:",
+                items: [
+                    { id: 'lib', name: 'Library', target: 'desc-lib' },
+                    { id: 'res', name: 'Research', target: 'desc-res' },
+                    { id: 'deg', name: 'Degree', target: 'desc-deg' }
+                ],
+                targets: [
+                    { id: 'desc-lib', text: "A collection of information for reference or borrowing" },
+                    { id: 'desc-res', text: "Computing and IT solutions for IT-sector development" },
+                    { id: 'desc-deg', text: "Undergraduate and postgraduate courses for various levels" }
+                ],
+                explanation: "These are the three core pillars of UIT: The Library for knowledge access, Research for innovation, and Degree programs for academic excellence."
+            },
+            {
+                type: 'choice',
+                question: "The UIT Library is described as:",
+                options: [
+                    "A collection of digital-only files",
+                    "A community space for games",
+                    "A collection of information for reference or borrowing",
+                    "A place for staff meetings only"
+                ],
+                correct: 2,
+                explanation: "The UIT Library serves the academic community by providing both physical and digital resources for reference and borrowing to support student learning."
+            },
+            {
+                type: 'sorting',
+                question: "Sort these UIT offerings from Undergraduate to Doctoral level (Top to Bottom):",
+                items: [
+                    { id: 'doc', text: "Doctoral" },
+                    { id: 'mas', text: "Master's" },
+                    { id: 'bac', text: "Bachelor's" }
+                ],
+                correctOrder: ['bac', 'mas', 'doc'],
+                explanation: "UIT students typically progress from a Bachelor's degree to a Master's, and finally a Doctoral level for specialized IT research and expertise."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let canAnswer = true;
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('question-counter').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+            document.getElementById('progress-fill').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+            
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+            
+            if (q.type === 'choice') {
+                q.options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn w-full text-left p-5 rounded-2xl bg-white shadow-sm font-semibold';
+                    btn.textContent = option;
+                    btn.onclick = () => { playSound('click'); selectOption(index, btn); };
+                    optionsGrid.appendChild(btn);
+                });
+            } else if (q.type === 'dragdrop') {
+                const container = document.createElement('div');
+                container.className = 'space-y-6';
+                
+                // Draggable Items
+                const itemsContainer = document.createElement('div');
+                itemsContainer.className = 'flex flex-wrap gap-3 justify-center mb-8';
+                q.items.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'draggable-item bg-white px-6 py-3 rounded-xl shadow-md border-2 border-transparent font-bold text-[#007684]';
+                    el.textContent = item.name;
+                    el.draggable = true;
+                    el.dataset.id = item.id;
+                    el.addEventListener('dragstart', handleDragStart);
+                    el.addEventListener('dragend', handleDragEnd);
+                    itemsContainer.appendChild(el);
+                });
+                
+                // Drop Zones
+                const zonesContainer = document.createElement('div');
+                zonesContainer.className = 'space-y-4';
+                q.targets.forEach(target => {
+                    const zoneWrap = document.createElement('div');
+                    zoneWrap.className = 'flex flex-col gap-2';
+                    const label = document.createElement('span');
+                    label.className = 'text-sm font-semibold text-gray-500 italic';
+                    label.textContent = `Target: ${target.text}`;
+                    
+                    const zone = document.createElement('div');
+                    zone.className = 'drop-zone p-4 rounded-xl';
+                    zone.dataset.targetId = target.id;
+                    zone.addEventListener('dragover', handleDragOver);
+                    zone.addEventListener('dragleave', handleDragLeave);
+                    zone.addEventListener('drop', handleDrop);
+                    
+                    zoneWrap.appendChild(label);
+                    zoneWrap.appendChild(zone);
+                    zonesContainer.appendChild(zoneWrap);
+                });
+
+                container.appendChild(itemsContainer);
+                container.appendChild(zonesContainer);
+                
+                // Submit Button for Drag & Drop
+                const submitBtn = document.createElement('button');
+                submitBtn.className = 'w-full bg-[#007684] text-white py-4 rounded-xl font-bold mt-6 hover:bg-[#005a66] transition-colors';
+                submitBtn.textContent = "Check Answers";
+                submitBtn.onclick = checkDragDrop;
+                container.appendChild(submitBtn);
+                
+                optionsGrid.appendChild(container);
+            } else if (q.type === 'sorting') {
+                const container = document.createElement('div');
+                container.className = 'space-y-4';
+                
+                const itemsList = document.createElement('div');
+                itemsList.className = 'grid gap-3';
+                q.items.sort(() => Math.random() - 0.5).forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'draggable-item bg-white p-4 rounded-xl shadow-md border-2 border-gray-100 flex items-center justify-between cursor-move';
+                    el.dataset.id = item.id;
+                    el.draggable = true;
+                    el.innerHTML = `
+                        <span class="font-bold">${item.text}</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M4 8h16M4 16h16"/></svg>
+                    `;
+                    el.addEventListener('dragstart', handleSortStart);
+                    el.addEventListener('dragover', handleSortOver);
+                    el.addEventListener('drop', handleSortDrop);
+                    itemsList.appendChild(el);
+                });
+                
+                container.appendChild(itemsList);
+                
+                const submitBtn = document.createElement('button');
+                submitBtn.className = 'w-full bg-[#007684] text-white py-4 rounded-xl font-bold mt-6 hover:bg-[#005a66] transition-colors';
+                submitBtn.textContent = "Confirm Order";
+                submitBtn.onclick = checkSorting;
+                container.appendChild(submitBtn);
+                
+                optionsGrid.appendChild(container);
+            }
+            canAnswer = true;
+        }
+
+        // Drag and Drop Handlers
+        let draggedItem = null;
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+        }
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+        }
+        function handleDragOver(e) {
+            e.preventDefault();
+            this.classList.add('over');
+        }
+        function handleDragLeave() {
+            this.classList.remove('over');
+        }
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('over');
+            const id = e.dataTransfer.getData('text/plain');
+            if (this.children.length === 0) {
+                this.appendChild(draggedItem);
+                playSound('click');
+            }
+        }
+
+        function checkDragDrop() {
+            if (!canAnswer) return;
+            const q = questions[currentQuestion];
+            const zones = document.querySelectorAll('.drop-zone');
+            let allCorrect = true;
+            
+            zones.forEach(zone => {
+                const targetId = zone.dataset.targetId;
+                const item = zone.firstChild;
+                const expectedItem = q.items.find(i => i.target === targetId);
+                
+                if (item && item.dataset.id === expectedItem.id) {
+                    zone.style.borderColor = '#10b981';
+                    zone.style.background = 'rgba(16, 185, 129, 0.1)';
+                } else {
+                    zone.style.borderColor = '#ef4444';
+                    zone.style.background = 'rgba(239, 68, 68, 0.1)';
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect) {
+                score++;
+                playSound('correct');
+                showExplanation(true);
+            } else {
+                playSound('wrong');
+                showExplanation(false);
+            }
+            
+            canAnswer = false;
+        }
+
+        // Sorting Handlers
+        let sortItem = null;
+        function handleSortStart(e) {
+            sortItem = this;
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+        }
+        function handleSortOver(e) {
+            e.preventDefault();
+            const rect = this.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+            if (e.clientY < midpoint) {
+                this.style.borderTop = '2px solid var(--primary)';
+                this.style.borderBottom = '';
+            } else {
+                this.style.borderBottom = '2px solid var(--primary)';
+                this.style.borderTop = '';
+            }
+        }
+        function handleSortDrop(e) {
+            e.preventDefault();
+            this.style.borderTop = '';
+            this.style.borderBottom = '';
+            if (this !== sortItem) {
+                const parent = this.parentNode;
+                const rect = this.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                if (e.clientY < midpoint) {
+                    parent.insertBefore(sortItem, this);
+                } else {
+                    parent.insertBefore(sortItem, this.nextSibling);
+                }
+                playSound('click');
+            }
+        }
+
+        function checkSorting() {
+            if (!canAnswer) return;
+            const q = questions[currentQuestion];
+            const items = Array.from(document.querySelectorAll('.draggable-item')).map(el => el.dataset.id);
+            const isCorrect = JSON.stringify(items) === JSON.stringify(q.correctOrder);
+            
+            if (isCorrect) {
+                score++;
+                playSound('correct');
+                showExplanation(true);
+            } else {
+                playSound('wrong');
+                showExplanation(false);
+            }
+            
+            canAnswer = false;
+        }
+
+        function selectOption(index, btn) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            const correct = questions[currentQuestion].correct;
+            const buttons = document.querySelectorAll('.option-btn');
+
+            if (index === correct) {
+                score++;
+                btn.classList.add('correct');
+                playSound('correct');
+                showExplanation(true);
+            } else {
+                btn.classList.add('wrong');
+                buttons[correct].classList.add('correct');
+                playSound('wrong');
+                showExplanation(false);
+            }
+
+            document.getElementById('score-display').textContent = `Score: ${score}`;
+        }
+
+        function showExplanation(isCorrect) {
+            const q = questions[currentQuestion];
+            const modal = document.getElementById('explanation-modal');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const text = document.getElementById('explanation-text');
+
+            icon.textContent = isCorrect ? '✅' : '❌';
+            title.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+            title.style.color = isCorrect ? '#10b981' : '#ef4444';
+            text.textContent = q.explanation;
+
+            modal.classList.add('visible');
+            
+            // Speak the explanation
+            const utterance = new SpeechSynthesisUtterance(q.explanation);
+            utterance.rate = 0.95;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function closeExplanation() {
+            window.speechSynthesis.cancel(); // Stop speaking
+            document.getElementById('explanation-modal').classList.remove('visible');
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                playSound('finish');
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('question-area').classList.add('hidden');
+            document.getElementById('result-area').classList.remove('hidden');
+            
+            const resultText = document.getElementById('result-text');
+            const resultTitle = document.getElementById('result-title');
+            const resultEmoji = document.getElementById('result-emoji');
+            
+            resultText.textContent = `You scored ${score} out of ${questions.length}`;
+            
+            if (score === questions.length) {
+                resultTitle.textContent = "Perfect Score!";
+                resultEmoji.textContent = "🏆";
+                localStorage.setItem('badge_master', 'true');
+            } else if (score >= questions.length / 2) {
+                resultTitle.textContent = "Great Job!";
+                resultEmoji.textContent = "🌟";
+            } else {
+                resultTitle.textContent = "Keep Learning!";
+                resultEmoji.textContent = "📚";
+            }
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>

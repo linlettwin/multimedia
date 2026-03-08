@@ -10,6 +10,13 @@
             --uit-teal: #007684;
             --white-alpha: rgba(255, 255, 255, 0.95);
             --dark-overlay: rgba(0, 0, 0, 0.7);
+            --text-dark: #333;
+        }
+
+        body.dark-mode {
+            --uit-teal: #00d4aa;
+            --white-alpha: rgba(15, 23, 42, 0.95);
+            --text-dark: #f1f5f9;
         }
 
         body, html {
@@ -19,6 +26,7 @@
             font-family: 'Open Sans', sans-serif;
             overflow: hidden;
             background-color: #000;
+            transition: background-color 0.3s ease;
         }
 
         /* Full Screen Background Container */
@@ -56,6 +64,7 @@
             color: var(--uit-teal);
             box-sizing: border-box;
             z-index: 10;
+            transition: background-color 0.3s ease;
         }
 
         .logo-area { text-align: center; font-weight: bold; line-height: 1.2; }
@@ -73,12 +82,13 @@
             width: 320px;
             z-index: 5;
             box-shadow: 4px 0 15px rgba(0,0,0,0.2);
-            transition: left 0.4s ease;
+            transition: left 0.4s ease, background-color 0.3s ease;
+            color: var(--text-dark);
         }
 
         .info-card.hidden { left: -320px; }
 
-        .card-header { padding: 25px; border-bottom: 1px solid #eee; }
+        .card-header { padding: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
         .card-header h1 { margin: 0; font-family: 'Montserrat'; font-size: 1.2rem; }
 
         .nav-item {
@@ -87,18 +97,18 @@
             align-items: center;
             gap: 15px;
             cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             transition: background 0.2s;
         }
 
-        .nav-item:hover { background: #fff; color: var(--uit-teal); }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); color: var(--uit-teal); }
 
         .icon-circle {
             width: 32px; height: 32px;
             border: 1.5px solid var(--uit-teal);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-weight: bold;
+            color: var(--uit-teal);
         }
 
         .toggle-btn {
@@ -189,6 +199,14 @@
     </div>
 
 <script>
+// Apply dark mode immediately if set
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+
+// Mark as visited
+localStorage.setItem('visited_klab', 'true');
+
 let scale = 1;
 const img = document.getElementById('tourImg');
 

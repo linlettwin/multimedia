@@ -12,18 +12,29 @@
             --white: #ffffff;
             --text-dark: #333;
             --bg-overlay: rgba(0, 0, 0, 0.4);
+            --header-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode {
+            --uit-teal: #00d4aa;
+            --white: #0f172a;
+            --text-dark: #f1f5f9;
+            --bg-overlay: rgba(0, 0, 0, 0.7);
+            --header-bg: rgba(15, 23, 42, 0.95);
         }
 
         body, html {
             margin: 0;
             padding: 0;
              font-family: 'Open Sans', sans-serif;
-            color: var(--white);
+            color: var(--text-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         body {
             opacity: 0;              /* start hidden */
-            transition: opacity 1.0s ease-in-out; /* smooth fade-in */
+            transition: opacity 1.0s ease-in-out, background-color 0.3s ease; /* smooth fade-in */
+            background-color: var(--white);
             }
 
             body.loaded {
@@ -46,9 +57,10 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 40px;
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--header-bg);
             color: var(--uit-teal);
             border-bottom: 3px solid var(--uit-teal);
+            transition: background-color 0.3s ease;
         }
 
         .logo-area {
@@ -76,6 +88,7 @@
             text-align: center;
             margin-top: 60px;
             margin-bottom: 40px;
+            color: #ffffff; /* keep white on hero background */
         }
 
         .title-container h1 {
@@ -102,9 +115,9 @@
 
         /* Card Styling */
         .card {
-            background: var(--white);
+            background: var(--header-bg);
             border-bottom: 6px solid var(--uit-teal);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, background-color 0.3s ease;
             cursor: pointer;
             overflow: hidden;
             display: flex;
@@ -190,11 +203,11 @@
 
         <div class="grid-container">
             <div class="card">
-                <a href ="campus.html" style="text-decoration:none;color:inherit;">
+                <a href ="map.html" style="text-decoration:none;color:inherit;">
                 <div class="card-image" style="background-image: url('images/entrance.jpg');"></div>
                 <div class="card-content">
                     <div>
-                        <div class="card-title">Interactive Hostpot Campus</div>
+                        <div class="card-title">Interactive Campus Map</div>
                         <div class="card-underline"></div>
                     </div>
                     <div class="icon">📍</div>
@@ -233,7 +246,7 @@
                 <div class="card-image" style="background-image: url('images/mroom1.jpg');"></div>
                 <div class="card-content">
                     <div>
-                        <div class="card-title">Machine Rooms</div>
+                        <div class="card-title">Computer Labs</div>
                         <div class="card-underline"></div>
                     </div>
                     <div class="icon">🌐</div>
@@ -242,25 +255,29 @@
             </div>
 
             <div class="card">
-                <div class="card-image" style="background-image: url('images/hall1.jpg');"></div>
+                <a href ="history.html" style="text-decoration:none;color:inherit;">
+                <div class="card-image" style="background-image: url('images/outside.jpg');"></div>
                 <div class="card-content">
                     <div>
-                        <div class="card-title">Multipurpose Hall</div>
+                        <div class="card-title">Our History</div>
                         <div class="card-underline"></div>
                     </div>
-                    <div class="icon">🌐</div>
+                    <div class="icon">📜</div>
                 </div>
+                </a>
             </div>
 
             <div class="card">
-                <div class="card-image" style="background-image: url('images/library3.jpg');"></div>
+                <a href ="gallery.html" style="text-decoration:none;color:inherit;">
+                <div class="card-image" style="background-image: url('images/hall2.jpg');"></div>
                 <div class="card-content">
                     <div>
-                        <div class="card-title">Main Library</div>
+                        <div class="card-title">Multimedia Gallery</div>
                         <div class="card-underline"></div>
                     </div>
                     <div class="icon">🖼️</div>
                 </div>
+                </a>
             </div>
 
             <div class="card">
@@ -278,10 +295,28 @@
 
             
 
+            <div class="card">
+                <a href ="quiz.html" style="text-decoration:none;color:inherit;">
+                <div class="card-image" style="background-image: url('images/library1.jpg');"></div>
+                <div class="card-content">
+                    <div>
+                        <div class="card-title">Campus Challenge Quiz</div>
+                        <div class="card-underline"></div>
+                    </div>
+                    <div class="icon">🏆</div>
+                </div>
+                </a>
+            </div>
+
         </div>
     </div>
 
     <script>
+    // Apply dark mode immediately if set
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+    }
+
     // Fade in the whole page
     window.addEventListener('load', () => {
         document.body.classList.add('loaded');

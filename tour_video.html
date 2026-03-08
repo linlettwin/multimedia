@@ -14,6 +14,14 @@
     --uit-teal:#007684;
     --bg-light:#f6f9fa;
     --text-dark:#1c1c1c;
+    --card-bg: white;
+}
+
+body.dark-mode {
+    --uit-teal:#00d4aa;
+    --bg-light:#0f172a;
+    --text-dark:#f1f5f9;
+    --card-bg: #1e293b;
 }
 
 /* Base */
@@ -23,6 +31,7 @@ body{
     font-family:'Poppins',sans-serif;
     background:var(--bg-light);
     color:var(--text-dark);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Layout wrapper */
@@ -40,8 +49,9 @@ body{
     align-items:center;
     gap:20px;
     padding:20px 40px;
-    background:white;
+    background:var(--card-bg);
     border-bottom:2px solid var(--uit-teal);
+    transition: background-color 0.3s ease;
 }
 
 .page-title{
@@ -59,6 +69,7 @@ body{
     color:var(--uit-teal);
     border-radius:5px;
     transition:.3s;
+    background: var(--card-bg);
 }
 
 .back-btn div:hover{
@@ -84,55 +95,90 @@ body{
     max-width:520px;
 }
 
-.video-card{
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 15px 45px rgba(0,0,0,0.15);
-}
-
-.video-card video{
-    width:100%;
-    display:block;
-}
-
-/* Info Panel */
-
-.info-area{
-    flex:1;
-    max-width:520px;
-}
-
-.info-area h2{
-    font-family:'Montserrat';
-    font-size:2rem;
-    margin-bottom:20px;
-    color:var(--uit-teal);
-}
-
-.info-area p{
-    font-size:0.95rem;
-    line-height:1.7;
-    margin-bottom:18px;
-}
-
-/* Button */
-
-.visit-btn{
-    display:inline-block;
-    margin-top:10px;
-    padding:12px 26px;
-    background:var(--uit-teal);
-    color:white;
-    text-decoration:none;
-    border-radius:6px;
-    transition:.3s;
-}
-
-.visit-btn:hover{
-    background:#005a66;
-}
-
-/* Responsive */
+/* Custom Video Controls */
+    .video-controls {
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+    .bookmark-btn {
+        background: var(--card-bg);
+        border: 1px solid var(--uit-teal);
+        color: var(--uit-teal);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .bookmark-btn:hover, .bookmark-btn.active {
+        background: var(--uit-teal);
+        color: white;
+    }
+    .video-overlay {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        background: rgba(0, 118, 132, 0.85);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        backdrop-filter: blur(5px);
+        transform: translateY(100px);
+        transition: transform 0.5s ease;
+        opacity: 0;
+    }
+    .video-overlay.visible {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    .video-card {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.15);
+    }
+    
+    .video-card video {
+         width: 100%;
+         display: block;
+     }
+     
+     /* Info Panel */
+     .info-area {
+         flex: 1;
+         max-width: 520px;
+     }
+     .info-area h2 {
+         font-family: 'Montserrat';
+         font-size: 2rem;
+         margin-bottom: 20px;
+         color: var(--uit-teal);
+     }
+     .info-area p {
+         font-size: 0.95rem;
+         line-height: 1.7;
+         margin-bottom: 18px;
+     }
+     .visit-btn {
+         display: inline-block;
+         margin-top: 10px;
+         padding: 12px 26px;
+         background: var(--uit-teal);
+         color: white;
+         text-decoration: none;
+         border-radius: 6px;
+         transition: .3s;
+     }
+     .visit-btn:hover {
+         background: #005a66;
+     }
+     
+     /* Responsive */
 
 @media (max-width:900px){
 
@@ -171,10 +217,21 @@ body{
 
     <div class="video-card">
 
-      <video autoplay muted loop playsinline>
+      <video id="campusVideo" autoplay muted loop playsinline>
       <source src="images/campus_video.mp4" type="video/mp4">
       </video>
+      
+      <div id="videoOverlay" class="video-overlay">
+        Explore the beautiful campus of UIT!
+      </div>
 
+    </div>
+    
+    <div class="video-controls">
+      <button class="bookmark-btn" onclick="jumpTo(0, 'Main Entrance')">Main Entrance</button>
+      <button class="bookmark-btn" onclick="jumpTo(5, 'Academic Buildings')">Academic Buildings</button>
+      <button class="bookmark-btn" onclick="jumpTo(10, 'Student Square')">Student Square</button>
+      <button class="bookmark-btn" onclick="jumpTo(15, 'Innovation Center')">Innovation Center</button>
     </div>
 
   </div>
@@ -185,17 +242,18 @@ body{
 
     <h2>University of Information Technology</h2>
 
-    <p>
+    <p id="dynamicDesc">
     The University of Information Technology (UIT) is one of Myanmar’s leading institutions 
     focused on computer science, software engineering, and information technology education.
     </p>
 
-    <p>
-    The campus provides modern classrooms, advanced laboratories, and collaborative spaces 
-    that support innovation, research, and hands-on learning for students.
-    </p>
+    <div id="audioControls" class="mt-4">
+      <button onclick="speakDescription()" class="visit-btn" style="background: #00d4aa;">
+        🔊 Listen to Description
+      </button>
+    </div>
 
-    <p>
+    <p class="mt-8">
     UIT prepares students to become skilled IT professionals capable of contributing to 
     technological development both locally and internationally.
     </p>
@@ -209,6 +267,64 @@ body{
   </div>
 
   </div>
+  
+  <script>
+     // Apply dark mode immediately if set
+     if (localStorage.getItem('darkMode') === 'true') {
+         document.body.classList.add('dark-mode');
+     }
+
+     // Mark as visited
+     localStorage.setItem('visited_video', 'true');
+
+     const video = document.getElementById('campusVideo');
+    const overlay = document.getElementById('videoOverlay');
+    const desc = document.getElementById('dynamicDesc');
+    
+    const points = [
+      { time: 0, title: 'Main Entrance', text: 'Welcome to UIT! Our journey starts at the main entrance, where innovation begins.' },
+      { time: 5, title: 'Academic Buildings', text: 'Our state-of-the-art academic buildings house world-class facilities for learning.' },
+      { time: 10, title: 'Student Square', text: 'The Student Square is a vibrant hub for collaboration and student activities.' },
+      { time: 15, title: 'Innovation Center', text: 'In the Innovation Center, students turn their creative ideas into real-world technology.' }
+    ];
+
+    function jumpTo(time, title) {
+        video.currentTime = time;
+        video.play();
+        showOverlay(title);
+        updateDesc(title);
+    }
+
+    function showOverlay(title) {
+        overlay.textContent = `Viewing: ${title}`;
+        overlay.classList.add('visible');
+        setTimeout(() => overlay.classList.remove('visible'), 3000);
+    }
+    
+    function updateDesc(title) {
+        const point = points.find(p => p.title === title);
+        if (point) {
+            desc.textContent = point.text;
+        }
+    }
+
+    function speakDescription() {
+        const text = desc.textContent;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+    
+    // Auto-update highlights based on time
+    video.addEventListener('timeupdate', () => {
+        const current = video.currentTime;
+        const activePoint = points.find(p => Math.abs(current - p.time) < 0.5);
+        
+        document.querySelectorAll('.bookmark-btn').forEach(btn => {
+            btn.classList.toggle('active', activePoint && btn.textContent === activePoint.title);
+        });
+    });
+  </script>
 
 </body>
 </html>

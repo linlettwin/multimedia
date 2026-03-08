@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIT | Interactive Campus Map</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007684;
+            --primary-dark: #005a66;
+            --accent: #00d4aa;
+            --surface: #f8fafb;
+            --text-main: #1a2e35;
+            --map-bg: #e0f2f1;
+            --building-fill: #ffffff;
+            --road-fill: #cfd8dc;
+            --green-fill: #c8e6c9;
+            --ground-fill: #f1f8e9;
+        }
+        body.dark-mode {
+            --surface: #0f172a;
+            --text-main: #f1f5f9;
+            --map-bg: #1e293b;
+            --building-fill: #334155;
+            --road-fill: #475569;
+            --green-fill: #064e3b;
+            --ground-fill: #020617;
+            --primary: #00d4aa;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--surface);
+            color: var(--text-main);
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .map-container {
+            width: 100%;
+            height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--map-bg);
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+        .building {
+            fill: var(--building-fill);
+            stroke: var(--primary);
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .building:hover {
+            fill: var(--accent);
+            transform: translateY(-5px);
+        }
+        .building.active {
+            fill: var(--primary);
+            stroke: white;
+        }
+        .info-panel {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 350px;
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 24px;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
+            z-index: 50;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .info-panel.visible {
+            transform: translateX(0);
+        }
+        .road {
+            fill: var(--road-fill);
+        }
+        .greenery {
+            fill: var(--green-fill);
+        }
+        .map-svg {
+            max-width: 90%;
+            max-height: 90%;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.05));
+        }
+        nav {
+            background-color: var(--surface) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="h-20 flex items-center justify-between px-8">
+        <div class="flex items-center gap-3">
+            <a href="category.html" class="text-gray-500 hover:text-[#007684]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </a>
+            <h1 class="text-xl font-bold text-[#007684]">Interactive Campus Map</h1>
+        </div>
+        <div class="text-sm font-medium text-gray-500">Click a building to explore</div>
+    </nav>
+
+    <div class="map-container">
+        <svg viewBox="0 0 800 600" class="map-svg">
+            <!-- Background / Ground -->
+            <rect width="800" height="600" fill="var(--ground-fill)" />
+            
+            <!-- Green Areas -->
+            <circle cx="150" cy="150" r="100" class="greenery" />
+            <circle cx="650" cy="450" r="120" class="greenery" />
+            <rect x="300" y="250" width="200" height="100" rx="20" class="greenery" />
+
+            <!-- Roads -->
+            <path d="M0 300 H800" class="road" stroke="var(--road-fill)" stroke-width="40" fill="none" />
+            <path d="M400 0 V600" class="road" stroke="var(--road-fill)" stroke-width="40" fill="none" />
+
+            <!-- Buildings -->
+            <!-- Building 1 -->
+            <g class="building-group" onclick="showInfo('b1')">
+                <rect x="450" y="100" width="120" height="100" rx="8" class="building" id="b1" />
+                <text x="510" y="155" text-anchor="middle" class="pointer-events-none text-xs font-bold" fill="var(--text-main)">Building 1</text>
+            </g>
+
+            <!-- Building 2 -->
+            <g class="building-group" onclick="showInfo('b2')">
+                <rect x="450" y="400" width="120" height="100" rx="8" class="building" id="b2" />
+                <text x="510" y="455" text-anchor="middle" class="pointer-events-none text-xs font-bold" fill="var(--text-main)">Building 2</text>
+            </g>
+
+            <!-- Building 3 -->
+            <g class="building-group" onclick="showInfo('b3')">
+                <rect x="230" y="400" width="120" height="100" rx="8" class="building" id="b3" />
+                <text x="290" y="455" text-anchor="middle" class="pointer-events-none text-xs font-bold" fill="var(--text-main)">Building 3</text>
+            </g>
+
+            <!-- Building 4 (Admin) -->
+            <g class="building-group" onclick="showInfo('b4')">
+                <rect x="230" y="100" width="120" height="100" rx="8" class="building" id="b4" />
+                <text x="290" y="155" text-anchor="middle" class="pointer-events-none text-xs font-bold" fill="var(--text-main)">Building 4</text>
+            </g>
+
+            <!-- Library -->
+            <g class="building-group" onclick="showInfo('lib')">
+                <path d="M100 230 L180 230 L180 370 L100 370 Z" class="building" id="lib" />
+                <text x="140" y="305" text-anchor="middle" class="pointer-events-none text-xs font-bold" fill="var(--text-main)">Library</text>
+            </g>
+
+            <!-- Innovation Center -->
+            <g class="building-group" onclick="showInfo('inn')">
+                <circle cx="650" cy="300" r="50" class="building" id="inn" />
+                <text x="650" y="305" text-anchor="middle" class="pointer-events-none text-xs font-bold" fill="var(--text-main)">Lab</text>
+            </g>
+        </svg>
+
+        <!-- Info Panel -->
+        <div id="infoPanel" class="info-panel">
+            <button onclick="closeInfo()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <img id="infoImg" src="" class="w-full h-40 object-cover rounded-xl mb-4 shadow-sm" alt="Building">
+            <h2 id="infoTitle" class="text-2xl font-bold text-[#007684] mb-2">Building Name</h2>
+            <p id="infoDesc" class="text-gray-600 text-sm leading-relaxed mb-6">
+                Detailed description about the building goes here...
+            </p>
+            <div class="flex gap-3">
+                <button id="infoAction" class="flex-1 bg-[#007684] text-white py-2 rounded-lg font-semibold hover:bg-[#005a66] transition-colors">
+                    Explore Inside
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Apply dark mode immediately if set
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Mark as visited
+        localStorage.setItem('visited_map', 'true');
+
+        const buildings = {
+            'b1': {
+                title: 'Building 1',
+                desc: 'Houses the Faculty of Computer Science and various administrative offices. Features state-of-the-art classrooms and staff rooms.',
+                img: 'images/building1.jpg',
+                link: 'classroom.html'
+            },
+            'b2': {
+                title: 'Building 2',
+                desc: 'Home to Advanced Research Labs and the Machine Learning department. This building is where high-performance computing happens.',
+                img: 'images/building2.jpg',
+                link: 'machine_room.html'
+            },
+            'b3': {
+                title: 'Building 3',
+                desc: 'Dedicated to undergraduate studies and student collaborative spaces. Includes a large auditorium for events.',
+                img: 'images/outside.jpg',
+                link: 'category.html'
+            },
+            'b4': {
+                title: 'Building 4',
+                desc: 'The Administrative Heart of UIT. Here you will find student services, registration, and the finance office.',
+                img: 'images/entrance.jpg',
+                link: 'category.html'
+            },
+            'lib': {
+                title: 'Main Library',
+                desc: 'A massive collection of over 100,000 resources. Provides a quiet study environment and 24/7 digital access for all students.',
+                img: 'images/library3.jpg',
+                link: 'library.html'
+            },
+            'inn': {
+                title: 'Innovation Lab (K-Lab)',
+                desc: 'A collaborative space where students work on creative projects, startups, and hardware innovation.',
+                img: 'images/klab.jpg',
+                link: 'klab.html'
+            }
+        };
+
+        function showInfo(id) {
+            const data = buildings[id];
+            if (!data) return;
+
+            // Update panel
+            document.getElementById('infoTitle').textContent = data.title;
+            document.getElementById('infoDesc').textContent = data.desc;
+            document.getElementById('infoImg').src = data.img;
+            document.getElementById('infoAction').onclick = () => window.location.href = data.link;
+
+            // Show panel
+            document.getElementById('infoPanel').classList.add('visible');
+
+            // Highlight building
+            document.querySelectorAll('.building').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeInfo() {
+            document.getElementById('infoPanel').classList.remove('visible');
+            document.querySelectorAll('.building').forEach(el => el.classList.remove('active'));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIT | Multimedia Gallery</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007684;
+            --accent: #00d4aa;
+            --surface: #f8fafb;
+            --text-main: #1a2e35;
+            --card-bg: #ffffff;
+        }
+        body.dark-mode {
+            --surface: #0f172a;
+            --text-main: #f1f5f9;
+            --card-bg: #1e293b;
+            --primary: #00d4aa;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--surface);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .gallery-item {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: zoom-in;
+            background-color: var(--card-bg);
+        }
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .filter-btn {
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(0, 118, 132, 0.3);
+        }
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        #lightbox.visible {
+            display: flex;
+        }
+        header {
+            background-color: var(--card-bg) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: background-color 0.3s ease;
+        }
+        h1 {
+            color: var(--text-main) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h1 class="text-4xl font-extrabold" style="font-family: 'Space Grotesk', sans-serif;">Multimedia Gallery</h1>
+                    <p class="text-gray-500 mt-2">Explore our campus through high-definition photos and videos.</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="category.html" class="px-6 py-3 border-2 border-[#007684] text-[#007684] rounded-full font-bold hover:bg-[#007684] hover:text-white transition-all">
+                        Back to Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Gallery Section -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-3 mb-12 justify-center">
+            <button onclick="filterGallery('all')" class="filter-btn active px-6 py-2 rounded-full border font-semibold transition-all">All</button>
+            <button onclick="filterGallery('exterior')" class="filter-btn px-6 py-2 rounded-full border font-semibold transition-all">Exterior</button>
+            <button onclick="filterGallery('interiors')" class="filter-btn px-6 py-2 rounded-full border font-semibold transition-all">Interiors</button>
+            <button onclick="filterGallery('labs')" class="filter-btn px-6 py-2 rounded-full border font-semibold transition-all">Labs</button>
+            <button onclick="filterGallery('library')" class="filter-btn px-6 py-2 rounded-full border font-semibold transition-all">Library</button>
+        </div>
+
+        <!-- Grid -->
+        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Items will be injected by JS -->
+        </div>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <button class="absolute top-8 right-8 text-white hover:text-[#00d4aa]">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <img id="lightboxImg" src="" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Full view">
+    </div>
+
+    <script>
+        // Apply dark mode immediately if set
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Mark as visited
+        localStorage.setItem('visited_gallery', 'true');
+
+        const mediaItems = [
+            { src: 'images/outside.jpg', cat: 'exterior', title: 'Campus Entrance' },
+            { src: 'images/building1.jpg', cat: 'exterior', title: 'Main Building' },
+            { src: 'images/building2.jpg', cat: 'exterior', title: 'Research Center' },
+            { src: 'images/entrance.jpg', cat: 'exterior', title: 'UIT Gate' },
+            { src: 'images/classroom1.jpg', cat: 'interiors', title: 'Lecture Hall' },
+            { src: 'images/classroom2.jpg', cat: 'interiors', title: 'Modern Classroom' },
+            { src: 'images/classroom3.jpg', cat: 'interiors', title: 'Seminar Room' },
+            { src: 'images/corridor.jpg', cat: 'interiors', title: 'Modern Corridor' },
+            { src: 'images/klab.jpg', cat: 'labs', title: 'Innovation K-Lab' },
+            { src: 'images/klab2.jpg', cat: 'labs', title: 'Hardware Lab' },
+            { src: 'images/klab3.jpg', cat: 'labs', title: 'Student Projects' },
+            { src: 'images/mroom1.jpg', cat: 'labs', title: 'Computer Lab A' },
+            { src: 'images/mroom2.jpg', cat: 'labs', title: 'Computer Lab B' },
+            { src: 'images/library1.jpg', cat: 'library', title: 'Library Study Area' },
+            { src: 'images/library3.jpg', cat: 'library', title: 'Main Stacks' },
+            { src: 'images/hall1.jpg', cat: 'interiors', title: 'Auditorium' },
+            { src: 'images/hall2.jpg', cat: 'interiors', title: 'Main Lobby' }
+        ];
+
+        function renderGallery(items) {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = items.map(item => `
+                <div class="gallery-item bg-white rounded-2xl overflow-hidden shadow-sm group" onclick="openLightbox('${item.src}')">
+                    <div class="aspect-square relative overflow-hidden">
+                        <img src="${item.src}" class="w-full h-full object-cover group-hover:opacity-90 transition-opacity" alt="${item.title}">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                            <span class="text-white font-bold">${item.title}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterGallery(cat) {
+            // Update buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase() === cat);
+            });
+            if (cat === 'all') document.querySelector('.filter-btn').classList.add('active');
+
+            // Filter items
+            const filtered = cat === 'all' ? mediaItems : mediaItems.filter(i => i.cat === cat);
+            renderGallery(filtered);
+        }
+
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImg');
+            img.src = src;
+            lb.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.remove('visible');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Initial render
+        renderGallery(mediaItems);
+    </script>
+</body>
+</html>
