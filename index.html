@@ -83,6 +83,88 @@
     }
     .settings-btn:hover { transform: rotate(45deg) scale(1.1); }
 
+    /* FAQ Popup Styles */
+    #faq-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 100px;
+      width: 60px;
+      height: 60px;
+      background: #00d4aa;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 10px 20px rgba(0, 212, 170, 0.3);
+      cursor: pointer;
+      z-index: 999;
+      transition: all 0.3s ease;
+    }
+    #faq-btn:hover { transform: scale(1.1); }
+    
+    #faq-window {
+      position: fixed;
+      right: 20px;
+      bottom: 180px;
+      width: 350px;
+      height: 480px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(0, 118, 132, 0.1);
+    }
+    #faq-window.open { display: flex; animation: slide-up 0.4s ease; }
+
+    .faq-header {
+      background: var(--primary);
+      padding: 1.2rem 1.5rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .faq-content {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .faq-item {
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+    .faq-question {
+      padding: 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      opacity: 0.8;
+      padding: 0 1rem;
+    }
+    .faq-item.active .faq-answer {
+      max-height: 150px;
+      padding-bottom: 1rem;
+    }
+    .faq-item.active .faq-icon {
+      transform: rotate(180deg);
+    }
+
     /* Badge Notification */
     #badge-notif {
       position: fixed;
@@ -348,6 +430,62 @@
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
 
+    <!-- FAQ Popup -->
+    <div id="faq-btn" onclick="toggleFAQWindow()">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 8v3"/><path d="M12 14h.01"/></svg>
+    </div>
+
+    <div id="faq-window">
+      <div class="faq-header">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">❓</div>
+          <div class="font-bold">UIT Help Center</div>
+        </div>
+        <button onclick="toggleFAQWindow()" class="opacity-50 hover:opacity-100">✕</button>
+      </div>
+      <div class="faq-content">
+        <div class="faq-item" onclick="toggleFAQItem(this)">
+          <div class="faq-question">
+            <span>What degrees are offered?</span>
+            <svg class="faq-icon w-4 h-4 text-[#007684]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+          <div class="faq-answer">
+            UIT offers Bachelor's, Master's, and Doctoral degrees in specializations like Software Engineering, AI, and Cyber Security.
+          </div>
+        </div>
+        <div class="faq-item" onclick="toggleFAQItem(this)">
+          <div class="faq-question">
+            <span>Where is the campus?</span>
+            <svg class="faq-icon w-4 h-4 text-[#007684]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+          <div class="faq-answer">
+            Our campus is located in Yangon, Myanmar. Use our 'Interactive Map' to see the exact layout.
+          </div>
+        </div>
+        <div class="faq-item" onclick="toggleFAQItem(this)">
+          <div class="faq-question">
+            <span>How to apply?</span>
+            <svg class="faq-icon w-4 h-4 text-[#007684]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+          <div class="faq-answer">
+            Applications are handled annually via the official UIT website. Check our announcements for deadlines.
+          </div>
+        </div>
+        <div class="faq-item" onclick="toggleFAQItem(this)">
+          <div class="faq-question">
+            <span>Is it open for visits?</span>
+            <svg class="faq-icon w-4 h-4 text-[#007684]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+          <div class="faq-answer">
+            Yes! We welcome visitors during open house events. Please contact our admin office for schedule.
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-gray-100 text-center bg-gray-50 dark:bg-slate-800/50">
+        <a href="degrees.html" class="text-xs font-bold text-[#007684] hover:underline">View All Programs</a>
+      </div>
+    </div>
+
     <!-- Settings Panel -->
     <div id="settings-panel">
       <div class="flex items-center justify-between mb-8">
@@ -369,6 +507,14 @@
           <div class="font-semibold">Ambient Music</div>
           <button onclick="toggleMusic()" id="music-toggle" class="w-12 h-6 bg-gray-300 rounded-full relative transition-colors">
             <div class="dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"></div>
+          </button>
+        </div>
+
+        <!-- Language Toggle -->
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl dark:bg-slate-800">
+          <div class="font-semibold">Language</div>
+          <button onclick="toggleLanguage()" id="lang-toggle" class="px-3 py-1 bg-gray-200 dark:bg-slate-700 rounded-lg text-xs font-bold transition-all">
+            English
           </button>
         </div>
         
@@ -395,7 +541,7 @@
         </div>
        </div>
       </div><!-- Desktop Navigation -->
-      <div class="hidden md:flex items-center gap-8 animate-slide-in-right"><a href="#home" class="nav-link text-white font-medium">Home</a> <a href="#features" class="nav-link text-white font-medium">Features</a> <a href="#tour" class="nav-link text-white font-medium">Tour</a> <a href="quiz.html" class="nav-link text-white font-medium">Quiz</a> 
+      <div class="hidden md:flex items-center gap-8 animate-slide-in-right"><a href="#home" class="nav-link text-white font-medium">Home</a> <a href="#features" class="nav-link text-white font-medium">Features</a> <a href="#tour" class="nav-link text-white font-medium">Tour</a> <a href="javascript:void(0)" onclick="toggleFAQWindow()" class="nav-link text-white font-medium">FAQ</a> <a href="quiz.html" class="nav-link text-white font-medium">Quiz</a> 
       </div><!-- Mobile Menu Button --> <button class="md:hidden text-white p-2" id="mobile-menu-btn">
        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18" />
        </svg></button>
@@ -403,7 +549,7 @@
     </div>
    </nav><!-- Mobile Menu -->
    <div class="fixed inset-0 z-40 bg-[#007684] transform translate-x-full transition-transform duration-300 md:hidden" id="mobile-menu">
-    <div class="flex flex-col items-center justify-center h-full gap-8"><a href="#home" class="text-white text-2xl font-semibold">Home</a> <a href="#features" class="text-white text-2xl font-semibold">Features</a> <a href="#tour" class="text-white text-2xl font-semibold">Tour</a> <a href="quiz.html" class="text-white text-2xl font-semibold">Quiz</a> 
+    <div class="flex flex-col items-center justify-center h-full gap-8"><a href="#home" class="text-white text-2xl font-semibold">Home</a> <a href="#features" class="text-white text-2xl font-semibold">Features</a> <a href="#tour" class="text-white text-2xl font-semibold">Tour</a> <a href="javascript:void(0)" onclick="toggleFAQWindow()" class="text-white text-2xl font-semibold">FAQ</a> <a href="quiz.html" class="text-white text-2xl font-semibold">Quiz</a> 
     </div><button class="absolute top-6 right-6 text-white" id="close-menu-btn">
      <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" />
      </svg></button>
@@ -664,7 +810,9 @@
      </div>
     </div>
    </section>
- 
+   
+   <!-- FAQ Section removed from here -->
+   
    
    
   </div>
@@ -873,6 +1021,35 @@
       settingsPanel.classList.toggle('open');
     }
 
+    function toggleFAQWindow() {
+      const win = document.getElementById('faq-window');
+      win.classList.toggle('open');
+    }
+
+    function toggleFAQItem(element) {
+      element.classList.toggle('active');
+    }
+
+    function toggleLanguage() {
+      const btn = document.getElementById('lang-toggle');
+      const isEnglish = btn.textContent.trim() === 'English';
+      btn.textContent = isEnglish ? 'မြန်မာ' : 'English';
+      
+      const title = document.getElementById('hero-title');
+      const subtitle = document.getElementById('hero-subtitle');
+      const cta = document.getElementById('cta-button');
+      
+      if (isEnglish) {
+        title.innerHTML = 'UIT ကို <br><span class="text-[#00d4aa]">နေရာမရွေး လေ့လာပါ</span>';
+        subtitle.textContent = 'ကျွန်ုပ်တို့၏ စိတ်လှုပ်ရှားဖွယ် ကျောင်းဝင်းခရီးစဉ်မှတစ်ဆင့် နည်းပညာတက္ကသိုလ် (UIT) ကို ရှာဖွေပါ။';
+        cta.innerHTML = '<svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg> ခရီးစဉ်စတင်ပါ';
+      } else {
+        title.innerHTML = 'Explore UIT<br><span class="text-[#00d4aa]">From Anywhere</span>';
+        subtitle.textContent = 'Discover the University of Information Technology through our immersive campus tour. Experience every corner without leaving your home.';
+        cta.innerHTML = '<svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg> Start Your Tour';
+      }
+    }
+
     function toggleDarkMode() {
       const isDark = document.body.classList.toggle('dark-mode');
       darkModeBtn.classList.toggle('bg-primary', isDark);
@@ -926,7 +1103,7 @@
     });
 
     function updateProgress() {
-      const areas = ['classroom', 'computer_lab', 'klab', 'map', 'video', 'gallery', 'quiz', 'history'];
+      const areas = ['classroom', 'computer_lab', 'klab', 'map', 'video', 'gallery', 'quiz', 'history', 'degrees'];
       const visited = areas.filter(a => localStorage.getItem('visited_' + a) === 'true');
       const percentage = Math.round((visited.length / areas.length) * 100);
       

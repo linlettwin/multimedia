@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIT | Degree Finder</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007684;
+            --accent: #00d4aa;
+            --surface: #f8fafb;
+            --text-main: #1a2e35;
+            --card-bg: #ffffff;
+        }
+        body.dark-mode {
+            --surface: #0f172a;
+            --text-main: #f1f5f9;
+            --card-bg: #1e293b;
+            --primary: #00d4aa;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--surface);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+        .filter-chip {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .filter-chip.active {
+            background-color: var(--primary);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 118, 132, 0.3);
+        }
+        .degree-card {
+            transition: all 0.4s ease;
+        }
+        .degree-card:hover {
+            transform: translateY(-10px);
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 99px;
+            background: rgba(0, 118, 132, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Navbar -->
+    <nav class="h-20 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <a href="category.html" class="text-gray-500 hover:text-[#007684]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </a>
+            <h1 class="text-xl font-bold text-[#007684]">Interactive Degree Finder</h1>
+        </div>
+        <div class="text-sm font-medium text-gray-500">Find your path at UIT</div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-extrabold mb-4" style="font-family: 'Space Grotesk', sans-serif;">What are you interested in?</h2>
+            <p class="text-gray-500 dark:text-gray-400">Select your interests to discover the perfect degree for your career goals.</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-3 justify-center mb-16">
+            <div onclick="toggleFilter('all')" class="filter-chip active px-6 py-3 rounded-full bg-white dark:bg-slate-800 shadow-sm font-bold border-2 border-transparent">All Programs</div>
+            <div onclick="toggleFilter('software')" class="filter-chip px-6 py-3 rounded-full bg-white dark:bg-slate-800 shadow-sm font-bold border-2 border-transparent">Software Engineering</div>
+            <div onclick="toggleFilter('ai')" class="filter-chip px-6 py-3 rounded-full bg-white dark:bg-slate-800 shadow-sm font-bold border-2 border-transparent">AI & Data Science</div>
+            <div onclick="toggleFilter('network')" class="filter-chip px-6 py-3 rounded-full bg-white dark:bg-slate-800 shadow-sm font-bold border-2 border-transparent">Networking & Security</div>
+            <div onclick="toggleFilter('embedded')" class="filter-chip px-6 py-3 rounded-full bg-white dark:bg-slate-800 shadow-sm font-bold border-2 border-transparent">Embedded Systems</div>
+            <div onclick="toggleFilter('business')" class="filter-chip px-6 py-3 rounded-full bg-white dark:bg-slate-800 shadow-sm font-bold border-2 border-transparent">Business Information</div>
+        </div>
+
+        <!-- Results Grid -->
+        <div id="degree-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Cards will be injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        // Apply dark mode immediately if set
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Mark as visited
+        localStorage.setItem('visited_degrees', 'true');
+
+        const degrees = [
+            {
+                title: "B.C.Sc. (Software Engineering)",
+                desc: "Master the art of building complex software systems, from mobile apps to enterprise solutions.",
+                tags: ["software", "all"],
+                icon: "💻"
+            },
+            {
+                title: "B.C.Sc. (Knowledge Engineering)",
+                desc: "Dive into AI, machine learning, and big data to solve real-world problems with data intelligence.",
+                tags: ["ai", "all"],
+                icon: "🧠"
+            },
+            {
+                title: "B.C.Sc. (Business Information System)",
+                desc: "Bridge the gap between technology and business, managing digital transformation in organizations.",
+                tags: ["business", "all"],
+                icon: "📊"
+            },
+            {
+                title: "B.C.Sc. (High Performance Computing)",
+                desc: "Learn to design and manage large-scale computing systems for scientific and industrial research.",
+                tags: ["software", "network", "all"],
+                icon: "⚡"
+            },
+            {
+                title: "B.C.Sc. (Cyber Security)",
+                desc: "Protect the digital world by learning defensive and offensive security strategies.",
+                tags: ["network", "all"],
+                icon: "🛡️"
+            },
+            {
+                title: "B.C.Sc. (Computer Systems & Networking)",
+                desc: "Design the infrastructure that powers the internet, from local networks to global cloud systems.",
+                tags: ["network", "all"],
+                icon: "🌐"
+            },
+            {
+                title: "B.C.Sc. (Embedded Systems)",
+                desc: "Create the brains for smart devices, IoT systems, and industrial automation hardware.",
+                tags: ["embedded", "software", "all"],
+                icon: "🤖"
+            }
+        ];
+
+        function renderDegrees(filter) {
+            const grid = document.getElementById('degree-grid');
+            grid.innerHTML = '';
+            
+            const filtered = filter === 'all' ? degrees : degrees.filter(d => d.tags.includes(filter));
+            
+            filtered.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'degree-card bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 flex flex-col h-full';
+                card.innerHTML = `
+                    <div class="text-4xl mb-6">${d.icon}</div>
+                    <h3 class="text-xl font-bold mb-4">${d.title}</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mb-6 flex-grow">${d.desc}</p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        ${d.tags.filter(t => t !== 'all').map(t => `<span class="tag">${t.toUpperCase()}</span>`).join('')}
+                    </div>
+                    <a href="https://www.uit.edu.mm/" target="_blank" class="text-[#007684] dark:text-[#00d4aa] font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+                        Learn More <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleFilter(filter) {
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.textContent.toLowerCase().includes(filter) || (filter === 'all' && chip.textContent.includes('All')));
+            });
+            renderDegrees(filter);
+        }
+
+        // Initial render
+        renderDegrees('all');
+    </script>
+</body>
+</html>
