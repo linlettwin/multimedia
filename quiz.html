@@ -122,6 +122,61 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* Countdown Timer */
+        .timer-container {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .timer-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+        .timer-circle {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 4;
+            stroke-dasharray: 176;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+        }
+        .timer-text {
+            position: absolute;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        /* Image Question Styles */
+        .question-image-container {
+            width: 100%;
+            max-height: 250px;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 4px solid var(--card-bg);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .question-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .question-image:hover {
+            transform: scale(1.05);
+        }
+
         .progress-bar {
             height: 8px;
             background-color: #e5e7eb;
@@ -152,6 +207,14 @@
 
         <!-- Quiz Card -->
         <div id="quiz-card" class="glass rounded-3xl shadow-2xl p-8 mb-8 relative overflow-hidden">
+            <!-- Timer -->
+            <div id="timer-ui" class="timer-container hidden">
+                <svg class="timer-svg" viewBox="0 0 60 60">
+                    <circle class="timer-circle" cx="30" cy="30" r="28"></circle>
+                </svg>
+                <span id="timer-seconds" class="timer-text">15</span>
+            </div>
+
             <!-- Progress -->
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-2">
@@ -165,6 +228,9 @@
 
             <!-- Question Area -->
             <div id="question-area">
+                <div id="image-container" class="question-image-container hidden">
+                    <img id="question-image" src="" alt="Question Image" class="question-image">
+                </div>
                 <h2 id="question-text" class="text-2xl font-bold mb-8 leading-tight">
                     Loading question...
                 </h2>
@@ -194,9 +260,38 @@
                     <button onclick="location.reload()" class="bg-[#007684] text-white px-8 py-3 rounded-full font-bold hover:bg-[#005a66] transition-colors">
                         Try Again
                     </button>
+                    <button id="cert-btn" onclick="generateCertificate()" class="hidden bg-gradient-to-r from-amber-400 to-orange-500 text-white px-8 py-3 rounded-full font-bold hover:shadow-lg transition-all transform hover:scale-105">
+                        📜 Get Certificate
+                    </button>
                     <a href="index.html" class="border-2 border-[#007684] text-[#007684] px-8 py-3 rounded-full font-bold hover:bg-[#007684] hover:text-white transition-all">
                         Back to Home
                     </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Certificate Template (Hidden) -->
+        <div id="cert-template" class="hidden">
+            <div id="certificate" style="width: 800px; height: 600px; padding: 50px; background: white; border: 20px solid #007684; position: relative; font-family: 'Plus Jakarta Sans', sans-serif; color: #1a2e35; text-align: center;">
+                <div style="border: 5px solid #00d4aa; height: 100%; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+                    <div style="font-size: 24px; color: #007684; font-weight: 800; letter-spacing: 4px;">CERTIFICATE OF EXCELLENCE</div>
+                    <div style="margin-top: 20px;">
+                        <div style="font-size: 18px; font-style: italic;">This is to certify that</div>
+                        <div id="cert-user" style="font-size: 48px; font-weight: 800; color: #1a2e35; margin: 20px 0; border-bottom: 2px solid #007684; padding-bottom: 10px; min-width: 300px;">Campus Explorer</div>
+                        <div style="font-size: 18px;">has successfully mastered the</div>
+                        <div style="font-size: 28px; font-weight: 700; color: #007684; margin-top: 10px;">UIT CAMPUS CHALLENGE</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 40px;">
+                        <div style="text-align: left;">
+                            <div style="font-weight: bold; border-bottom: 1px solid #333;">2026-03-08</div>
+                            <div style="font-size: 12px; margin-top: 5px;">DATE</div>
+                        </div>
+                        <div style="font-size: 60px; color: #00d4aa; opacity: 0.3;">UIT</div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; border-bottom: 1px solid #333; font-family: 'Space Grotesk';">UIT Official</div>
+                            <div style="font-size: 12px; margin-top: 5px;">SIGNATURE</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -210,6 +305,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script>
         // Apply dark mode immediately if set
         if (localStorage.getItem('darkMode') === 'true') {
@@ -238,6 +334,26 @@
         const questions = [
             {
                 type: 'choice',
+                question: "Which of these is the iconic main building of UIT?",
+                image: "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1000&auto=format&fit=crop", // University building placeholder
+                options: [
+                    "The Innovation Center",
+                    "The Main Administrative Block",
+                    "The Digital Library",
+                    "The Convocation Hall"
+                ],
+                correct: 1,
+                explanation: "The main administrative block is the heart of UIT, housing the rector's office and central administration."
+            },
+            {
+                type: 'boolean',
+                question: "True or False: UIT was the first university in Myanmar to offer specialized IT degrees.",
+                options: ["True", "False"],
+                correct: 0,
+                explanation: "True! UIT (formerly UCC) has been at the forefront of computer science and information technology education in Myanmar since its inception."
+            },
+            {
+                type: 'choice',
                 question: "What is the official motto of UIT?",
                 options: [
                     "Innovation for All",
@@ -261,6 +377,19 @@
                 explanation: "UIT provides a full academic pathway, offering Bachelor's, Diploma, Master's, and even Doctoral level courses to develop IT professionals at all stages."
             },
             {
+                type: 'choice',
+                question: "Identify this facility used for advanced networking research:",
+                image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop", // Server/Lab placeholder
+                options: [
+                    "The Main Canteen",
+                    "Cisco Networking Lab",
+                    "The Student Lounge",
+                    "The Sports Hall"
+                ],
+                correct: 1,
+                explanation: "UIT features specialized labs like the Cisco Networking Lab to provide students with hands-on experience in modern network infrastructure."
+            },
+            {
                 type: 'dragdrop',
                 question: "Match UIT concepts to their descriptions by dragging them into the correct zones:",
                 items: [
@@ -274,6 +403,13 @@
                     { id: 'desc-deg', text: "Undergraduate and postgraduate courses for various levels" }
                 ],
                 explanation: "These are the three core pillars of UIT: The Library for knowledge access, Research for innovation, and Degree programs for academic excellence."
+            },
+            {
+                type: 'boolean',
+                question: "Is the UIT Library open to the general public for borrowing?",
+                options: ["Yes", "No"],
+                correct: 1,
+                explanation: "While the library is a rich resource, borrowing privileges are typically reserved for UIT students and staff to support their academic needs."
             },
             {
                 type: 'choice',
@@ -303,6 +439,55 @@
         let currentQuestion = 0;
         let score = 0;
         let canAnswer = true;
+        let timerInterval = null;
+        let timeLeft = 15;
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 15;
+            const timerUi = document.getElementById('timer-ui');
+            const timerText = document.getElementById('timer-seconds');
+            const timerCircle = document.querySelector('.timer-circle');
+            
+            timerUi.classList.remove('hidden');
+            timerText.textContent = timeLeft;
+            timerCircle.style.strokeDashoffset = 0;
+            timerCircle.style.stroke = 'var(--primary)';
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = timeLeft;
+                
+                // Update circle
+                const offset = 176 - (timeLeft / 15) * 176;
+                timerCircle.style.strokeDashoffset = offset;
+
+                if (timeLeft <= 5) {
+                    timerCircle.style.stroke = '#ef4444';
+                    timerText.style.color = '#ef4444';
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function handleTimeout() {
+            if (!canAnswer) return;
+            canAnswer = false;
+            playSound('wrong');
+            
+            // Highlight correct answer if it's a choice question
+            const q = questions[currentQuestion];
+            if (q.type === 'choice' || q.type === 'boolean') {
+                const buttons = document.querySelectorAll('.option-btn');
+                buttons[q.correct].classList.add('correct');
+            }
+            
+            showExplanation(false, "Time's up! You need to answer more quickly next time.");
+        }
 
         function loadQuestion() {
             const q = questions[currentQuestion];
@@ -310,14 +495,32 @@
             document.getElementById('question-counter').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
             document.getElementById('progress-fill').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
             
+            // Handle Image
+            const imgContainer = document.getElementById('image-container');
+            const imgEl = document.getElementById('question-image');
+            if (q.image) {
+                imgEl.src = q.image;
+                imgContainer.classList.remove('hidden');
+            } else {
+                imgContainer.classList.add('hidden');
+            }
+
             const optionsGrid = document.getElementById('options-grid');
             optionsGrid.innerHTML = '';
             
-            if (q.type === 'choice') {
+            if (q.type === 'choice' || q.type === 'boolean') {
+                const gridClass = q.type === 'boolean' ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2';
+                optionsGrid.className = `grid gap-4 ${gridClass}`;
+                
                 q.options.forEach((option, index) => {
                     const btn = document.createElement('button');
-                    btn.className = 'option-btn w-full text-left p-5 rounded-2xl bg-white shadow-sm font-semibold';
-                    btn.textContent = option;
+                    btn.className = 'option-btn w-full text-left p-5 rounded-2xl bg-white shadow-sm font-semibold flex items-center gap-3';
+                    btn.innerHTML = `
+                        <span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-400 group-hover:bg-primary/10 transition-colors">
+                            ${String.fromCharCode(65 + index)}
+                        </span>
+                        <span>${option}</span>
+                    `;
                     btn.onclick = () => { playSound('click'); selectOption(index, btn); };
                     optionsGrid.appendChild(btn);
                 });
@@ -403,7 +606,9 @@
                 
                 optionsGrid.appendChild(container);
             }
+            
             canAnswer = true;
+            startTimer();
         }
 
         // Drag and Drop Handlers
@@ -435,6 +640,8 @@
 
         function checkDragDrop() {
             if (!canAnswer) return;
+            canAnswer = false;
+            clearInterval(timerInterval);
             const q = questions[currentQuestion];
             const zones = document.querySelectorAll('.drop-zone');
             let allCorrect = true;
@@ -503,6 +710,8 @@
 
         function checkSorting() {
             if (!canAnswer) return;
+            canAnswer = false;
+            clearInterval(timerInterval);
             const q = questions[currentQuestion];
             const items = Array.from(document.querySelectorAll('.draggable-item')).map(el => el.dataset.id);
             const isCorrect = JSON.stringify(items) === JSON.stringify(q.correctOrder);
@@ -522,6 +731,7 @@
         function selectOption(index, btn) {
             if (!canAnswer) return;
             canAnswer = false;
+            clearInterval(timerInterval);
 
             const correct = questions[currentQuestion].correct;
             const buttons = document.querySelectorAll('.option-btn');
@@ -541,22 +751,26 @@
             document.getElementById('score-display').textContent = `Score: ${score}`;
         }
 
-        function showExplanation(isCorrect) {
+        function showExplanation(isCorrect, customText = null) {
             const q = questions[currentQuestion];
             const modal = document.getElementById('explanation-modal');
             const icon = document.getElementById('feedback-icon');
             const title = document.getElementById('feedback-title');
             const text = document.getElementById('explanation-text');
+            const timerUi = document.getElementById('timer-ui');
+
+            timerUi.classList.add('hidden');
+            clearInterval(timerInterval);
 
             icon.textContent = isCorrect ? '✅' : '❌';
-            title.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+            title.textContent = isCorrect ? 'Correct!' : (timeLeft <= 0 ? "Time's Up!" : 'Incorrect');
             title.style.color = isCorrect ? '#10b981' : '#ef4444';
-            text.textContent = q.explanation;
+            text.textContent = customText || q.explanation;
 
             modal.classList.add('visible');
             
             // Speak the explanation
-            const utterance = new SpeechSynthesisUtterance(q.explanation);
+            const utterance = new SpeechSynthesisUtterance(text.textContent);
             utterance.rate = 0.95;
             window.speechSynthesis.speak(utterance);
         }
@@ -580,6 +794,7 @@
         function showResults() {
             document.getElementById('question-area').classList.add('hidden');
             document.getElementById('result-area').classList.remove('hidden');
+            document.getElementById('timer-ui').classList.add('hidden');
             
             const resultText = document.getElementById('result-text');
             const resultTitle = document.getElementById('result-title');
@@ -591,6 +806,32 @@
                 resultTitle.textContent = "Perfect Score!";
                 resultEmoji.textContent = "🏆";
                 localStorage.setItem('badge_master', 'true');
+                document.getElementById('cert-btn').classList.remove('hidden');
+                
+                // Confetti for perfect score
+                const duration = 3 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 7,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#007684', '#00d4aa']
+                    });
+                    confetti({
+                        particleCount: 7,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#007684', '#00d4aa']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
             } else if (score >= questions.length / 2) {
                 resultTitle.textContent = "Great Job!";
                 resultEmoji.textContent = "🌟";
@@ -598,6 +839,38 @@
                 resultTitle.textContent = "Keep Learning!";
                 resultEmoji.textContent = "📚";
             }
+        }
+
+        function generateCertificate() {
+            const name = prompt("Enter your name for the certificate:", "UIT Explorer") || "Campus Explorer";
+            document.getElementById('cert-user').innerText = name;
+            
+            const certHtml = document.getElementById('cert-template').innerHTML;
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                    <head>
+                        <title>UIT Certificate - ${name}</title>
+                        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+                        <style>
+                            body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f0f4f8; }
+                            @media print {
+                                body { background: white; }
+                                button { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                            ${certHtml}
+                            <button onclick="window.print()" style="padding: 15px 30px; background: #007684; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                                🖨️ Print or Save as PDF
+                            </button>
+                        </div>
+                    </body>
+                </html>
+            `);
+            win.document.close();
         }
 
         loadQuestion();

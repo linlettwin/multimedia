@@ -231,6 +231,117 @@ header {
  .audioguide button.stop {
      background: #555;
  }
+ 
+ /* Hardware Explorer Styles */
+ .hardware-explorer-btn {
+     position: fixed;
+     right: 20px;
+     bottom: 20px;
+     background: #ff9800;
+     color: white;
+     border: none;
+     border-radius: 50px;
+     padding: 12px 24px;
+     font-weight: 800;
+     cursor: pointer;
+     box-shadow: 0 4px 15px rgba(255,152,0,0.4);
+     z-index: 10;
+     display: flex;
+     align-items: center;
+     gap: 10px;
+     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+ }
+ .hardware-explorer-btn:hover {
+     transform: translateY(-5px) scale(1.05);
+     box-shadow: 0 8px 25px rgba(255,152,0,0.5);
+ }
+ .hardware-explorer-btn.active {
+     background: #f44336;
+     box-shadow: 0 4px 15px rgba(244,67,54,0.4);
+ }
+ 
+ .hardware-modal {
+     position: fixed;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%) scale(0.9);
+     width: 90%;
+     max-width: 500px;
+     background: var(--white);
+     color: var(--text-dark);
+     padding: 30px;
+     border-radius: 24px;
+     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+     z-index: 100;
+     opacity: 0;
+     visibility: hidden;
+     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+     border: 2px solid var(--uit-teal);
+ }
+ .hardware-modal.visible {
+     opacity: 1;
+     visibility: visible;
+     transform: translate(-50%, -50%) scale(1);
+ }
+ .modal-overlay {
+     position: fixed;
+     inset: 0;
+     background: rgba(0,0,0,0.7);
+     backdrop-filter: blur(4px);
+     z-index: 99;
+     opacity: 0;
+     visibility: hidden;
+     transition: all 0.3s ease;
+ }
+ .modal-overlay.visible {
+     opacity: 1;
+     visibility: visible;
+ }
+ .spec-grid {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 15px;
+     margin-top: 20px;
+ }
+ .spec-item {
+     background: rgba(0,118,132,0.05);
+     padding: 15px;
+     border-radius: 12px;
+     border: 1px solid rgba(0,118,132,0.1);
+ }
+ .spec-label {
+     font-size: 0.75rem;
+     text-transform: uppercase;
+     letter-spacing: 1px;
+     color: var(--uit-teal);
+     font-weight: 700;
+     margin-bottom: 5px;
+ }
+ .spec-value {
+     font-weight: 600;
+     font-size: 1.1rem;
+ }
+ .hardware-node {
+     position: absolute;
+     width: 30px;
+     height: 30px;
+     background: #ff9800;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     color: white;
+     font-weight: bold;
+     cursor: pointer;
+     animation: pulse 2s infinite;
+     z-index: 5;
+     pointer-events: auto;
+ }
+ @keyframes pulse {
+     0% { box-shadow: 0 0 0 0 rgba(255,152,0,0.7); }
+     70% { box-shadow: 0 0 0 15px rgba(255,152,0,0); }
+     100% { box-shadow: 0 0 0 0 rgba(255,152,0,0); }
+ }
 </style>
 </head>
 
@@ -257,6 +368,30 @@ header {
         <img id="tourImg" src="images/mroom1.jpg">
     </div>
     <div id="hotspotLayer" class="hotspot-layer"></div>
+    <div id="hardwareLayer" class="hotspot-layer"></div>
+
+    <button id="hardwareToggle" class="hardware-explorer-btn">
+        <span>🔍 Hardware Explorer</span>
+    </button>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+    <div id="hardwareModal" class="hardware-modal">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h2 id="hw-title" style="margin: 0; font-family: 'Montserrat', sans-serif;">Workstation Specs</h2>
+                <p id="hw-desc" style="margin: 5px 0 0; opacity: 0.7;">Detailed component breakdown</p>
+            </div>
+            <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark);">×</button>
+        </div>
+        <div id="hw-image-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+            <img id="hw-image" src="" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div class="spec-grid" id="hw-specs">
+            <!-- Specs injected here -->
+        </div>
+        <button onclick="closeModal()" style="width: 100%; background: var(--uit-teal); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; margin-top: 25px; cursor: pointer;">Close Explorer</button>
+    </div>
+
     <div class="audioguide">
         <button id="narrateBtn">🔊 Narrate</button>
         <button id="stopBtn" class="stop">⏹ Stop</button>
@@ -334,10 +469,116 @@ function changeLocation(name,src){
         img.style.opacity = 1
 
         renderHotspots(src)
+        if (isHardwareMode) renderHardwareNodes(src)
 
     },400)
-
 }
+
+/* HARDWARE EXPLORER LOGIC */
+let isHardwareMode = false
+const hardwareData = {
+    "images/mroom1.jpg": [
+        { 
+            x: "45%", y: "65%", 
+            title: "Student Workstation",
+            desc: "Standard high-performance desktop for lab work.",
+            image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1000&auto=format&fit=crop",
+            specs: { "CPU": "Intel Core i7-13700", "RAM": "32GB DDR5", "GPU": "RTX 3060", "Storage": "1TB NVMe SSD" }
+        }
+    ],
+    "images/mroom2.jpg": [
+        { 
+            x: "50%", y: "65%", 
+            title: "Development PC",
+            desc: "Optimized for software engineering and compilation.",
+            image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000&auto=format&fit=crop",
+            specs: { "CPU": "AMD Ryzen 9 7900X", "RAM": "64GB DDR5", "Display": "Dual 4K Monitor", "OS": "Ubuntu / Win 11" }
+        },
+        
+    ],
+    "images/mroom3.jpg":[
+        ,
+        { 
+            x: "95%", y: "45%", 
+            title: "Network Switch",
+            desc: "High-speed Cisco switch connecting the lab.",
+            image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop",
+            specs: { "Type": "Managed L3", "Speed": "10Gbps", "Ports": "48-Port PoE+", "Model": "Catalyst 9300" }
+        }
+    ]
+}
+
+function toggleHardwareMode() {
+    isHardwareMode = !isHardwareMode
+    const btn = document.getElementById("hardwareToggle")
+    const layer = document.getElementById("hardwareLayer")
+    const hotspotLayer = document.getElementById("hotspotLayer")
+    
+    if (isHardwareMode) {
+        btn.classList.add("active")
+        btn.innerHTML = "<span>✖ Close Explorer</span>"
+        hotspotLayer.style.opacity = "0.2"
+        hotspotLayer.style.pointerEvents = "none"
+        renderHardwareNodes(document.getElementById("tourImg").getAttribute("src"))
+    } else {
+        btn.classList.remove("active")
+        btn.innerHTML = "<span>🔍 Hardware Explorer</span>"
+        hotspotLayer.style.opacity = "1"
+        hotspotLayer.style.pointerEvents = "auto"
+        layer.innerHTML = ""
+    }
+}
+
+function renderHardwareNodes(src) {
+    const layer = document.getElementById("hardwareLayer")
+    layer.innerHTML = ""
+    const nodes = hardwareData[src] || []
+    
+    nodes.forEach(node => {
+        const el = document.createElement("div")
+        el.className = "hardware-node"
+        el.style.left = node.x
+        el.style.top = node.y
+        el.innerHTML = "i"
+        el.onclick = () => showHardwareInfo(node)
+        layer.appendChild(el)
+    })
+}
+
+function showHardwareInfo(data) {
+    document.getElementById("hw-title").innerText = data.title
+    document.getElementById("hw-desc").innerText = data.desc
+    document.getElementById("hw-image").src = data.image
+    
+    const specsGrid = document.getElementById("hw-specs")
+    specsGrid.innerHTML = ""
+    
+    for (const [key, value] of Object.entries(data.specs)) {
+        const item = document.createElement("div")
+        item.className = "spec-item"
+        item.innerHTML = `
+            <div class="spec-label">${key}</div>
+            <div class="spec-value">${value}</div>
+        `
+        specsGrid.appendChild(item)
+    }
+    
+    document.getElementById("hardwareModal").classList.add("visible")
+    document.getElementById("modalOverlay").classList.add("visible")
+    
+    // Voice description
+    const utter = new SpeechSynthesisUtterance(`${data.title}. ${data.desc}`)
+    window.speechSynthesis.speak(utter)
+}
+
+function closeModal() {
+    document.getElementById("hardwareModal").classList.remove("visible")
+    document.getElementById("modalOverlay").classList.remove("visible")
+    window.speechSynthesis.cancel()
+}
+
+document.getElementById("hardwareToggle").addEventListener("click", toggleHardwareMode)
+document.getElementById("modalOverlay").addEventListener("click", closeModal)
 
 /* TOGGLE CARD */
 

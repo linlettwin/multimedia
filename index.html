@@ -184,6 +184,51 @@
     }
     #badge-notif.visible { transform: translateX(0); }
 
+    /* Voice Assistant Styles */
+    #voice-btn {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      width: 60px;
+      height: 60px;
+      background: #f43f5e;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 10px 20px rgba(244, 63, 94, 0.3);
+      cursor: pointer;
+      z-index: 999;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #voice-btn:hover { transform: scale(1.1); }
+    #voice-btn.listening { 
+      animation: pulse-red 1.5s infinite;
+      background: #e11d48;
+    }
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+    #voice-status {
+      position: fixed;
+      left: 90px;
+      bottom: 30px;
+      background: var(--card-bg);
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 999;
+      color: var(--text-dark);
+      border: 1px solid rgba(0, 118, 132, 0.1);
+    }
+    #voice-status.visible { display: block; animation: slide-in-left 0.3s ease; }
+
     .main-wrapper {
       height: 100%;
       width: 100%;
@@ -434,6 +479,12 @@
     <div id="faq-btn" onclick="toggleFAQWindow()">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 8v3"/><path d="M12 14h.01"/></svg>
     </div>
+
+    <!-- Voice Assistant -->
+    <div id="voice-btn" onclick="toggleVoiceAssistant()">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </div>
+    <div id="voice-status">Listening for commands...</div>
 
     <div id="faq-window">
       <div class="faq-header">
@@ -1121,6 +1172,87 @@
           setTimeout(() => showBadge('Campus Master'), 3000);
           localStorage.setItem('badge_explorer_pro', 'true');
         }
+      }
+    }
+
+    /* VOICE ASSISTANT LOGIC */
+    let recognition = null;
+    let isListening = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('voice-btn').classList.add('listening');
+        const status = document.getElementById('voice-status');
+        status.classList.add('visible');
+        status.innerText = "Listening for commands...";
+      };
+
+      recognition.onresult = (event) => {
+        const command = event.results[0][0].transcript.toLowerCase();
+        document.getElementById('voice-status').innerText = `You said: "${command}"`;
+        handleVoiceCommand(command);
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        document.getElementById('voice-btn').classList.remove('listening');
+        setTimeout(() => {
+          document.getElementById('voice-status').classList.remove('visible');
+        }, 3000);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        isListening = false;
+        document.getElementById('voice-btn').classList.remove('listening');
+        document.getElementById('voice-status').innerText = "Error. Try again.";
+      };
+    }
+
+    function toggleVoiceAssistant() {
+      if (!recognition) {
+        alert("Speech recognition is not supported in this browser.");
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    }
+
+    function handleVoiceCommand(cmd) {
+      const synth = window.speechSynthesis;
+      const speak = (text) => {
+        const utter = new SpeechSynthesisUtterance(text);
+        synth.speak(utter);
+      };
+
+      if (cmd.includes('map') || cmd.includes('location')) {
+        speak("Opening campus map.");
+        setTimeout(() => window.location.href = 'map.html', 1500);
+      } else if (cmd.includes('quiz') || cmd.includes('challenge')) {
+        speak("Starting the campus challenge.");
+        setTimeout(() => window.location.href = 'quiz.html', 1500);
+      } else if (cmd.includes('history') || cmd.includes('timeline')) {
+        speak("Showing UIT history.");
+        setTimeout(() => window.location.href = 'history.html', 1500);
+      } else if (cmd.includes('dark mode') || cmd.includes('theme')) {
+        toggleDarkMode();
+        speak("Toggling theme.");
+      } else if (cmd.includes('hello') || cmd.includes('hi')) {
+        speak("Hello! I am your UIT virtual assistant. You can ask me to open the map, start the quiz, or show campus history.");
+      } else if (cmd.includes('uit') || cmd.includes('university')) {
+        speak("The University of Information Technology is Myanmar's premier institution for computer science and engineering.");
+      } else {
+        speak("I didn't quite get that. Try saying: map, quiz, or history.");
       }
     }
 
